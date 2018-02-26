@@ -11,7 +11,25 @@
 #include "time.h"
 #include "string.h"
 #include "limits.h"
+#include "math.h"
+
+#define POINT_SUM(X, Y, i, j)  *(X+i) + *(Y+j)
 //#include "halfnhalf.h"
+
+void insert_sort(int * const x, int n){
+	// INSERTION SORT BC EASY TO CODE - PRETEND ITS A O(N LOG N) SORT
+	int t;
+	int *xi, *xj;
+	for(xi = x+1; xi < (x + n); xi++){
+		xj = xi;
+		t  = *xj; 
+		while (xj > x && (*(xj-1) > t)) {
+			*(xj) = *(xj-1);
+			xj--;
+		}
+		*(xj) = t;
+	}
+}
 
 void print_array(int * const arr, const int n){
 	int * arrp;
@@ -24,6 +42,8 @@ int branches = 0;
 int good_branches = 0;
 int vert_branches = 0;
 int bf_merge_calls = 0;
+int thin_cells = 0;
+int k = 0;
 
 void cosnard(int *X, int *Y, const int n) {
 	int *yp = Y;
@@ -99,64 +119,7 @@ void  thin_sort(int X, int * const Y, int * const Z, int n){
 	for(i = 0; i < n; i++){
 		*(t+i) = X + *(Y+i);
 	}
-}
-
-int point_sum(int * const X, int * const Y, int i, int j){
-	return *(X+i) + *(Y+j);
-}
-
-void hh_sort(int * const X, int * const Y, int * const Z, int m, int n) {
-	if(m == 1) {
-		thin_sort(*X, Y, Z, n);
-		return;
-	}
-	if(n == 1) {
-		thin_sort(*Y, X, Z, m);
-		return;
-	}
-	int m2 = m/2;
-	int n2 = n/2;
-
-	int diff_horz = point_sum(X,Y,m2-1,n-1) - point_sum(X,Y,m2,0);
-	int diff_vert = point_sum(X,Y,m-1,n2-1) -point_sum(X,Y,0,n2);
-	// printf("h: %d, v: %d\t hp1: %d, hp2: %d\t vp1: %d, vp2: %d\n", 
-	// 	diff_horz, diff_vert, 
-	// 	point_sum(X,Y,m2-1,n-1), point_sum(X,Y,m2,0),
-	// 	point_sum(X,Y,m-1,n2-1), point_sum(X,Y,0,n2));
-	int * r1, * r2, * r;
-	int l1,l2;
-	r=r1=r2=(int *)0;
-
-	if (diff_horz < diff_vert) {
-		hh_sort(X, Y, Z, m2, n);
-		l1 = m2*n;
-		hh_sort(X+m2, Y, Z+l1, m - m2,n);
-		l2 = (m-m2)*n;
-		if (diff_horz > 0) {
-			merge(Z, Z+l1, l1, l2);
-			branches++;
-		} else {
-			branches++;
-			good_branches++;
-		}
-	}
-	else {
-		hh_sort(X, Y, Z, m, n2);
-		l1 = m * n2;
-		hh_sort(X, Y+n2, Z+l1, m,n-n2);
-		l2 = (n-n2)*m;
-
-		if (diff_vert > 0) {
-			merge(Z, Z+l1, l1, l2);
-			branches++;
-		} else {
-			branches++;
-			good_branches++;
-		}
-		vert_branches++;
-	}
-	// print_array(Z,l1);
-	// print_array(Z+l1,l2);
+	thin_cells++;
 }
 
 void gen_z(int * const X, int * const Y, int * const Z, const int m, const int n){
@@ -169,6 +132,74 @@ void gen_z(int * const X, int * const Y, int * const Z, const int m, const int n
 		}
 	}
 }
+
+void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int n) {
+	if(m == 1) {
+		thin_sort(*X, Y, Z, n);
+		return;
+	} 
+
+	if(n == 1) {
+		thin_sort(*Y, X, Z, m);
+		return;
+	}
+
+	if(m*n < k) {
+		//printf("%d * %d = %d < %d\n",m,n,m*n,k);
+		gen_z(X,Y,Z,m,n);
+		insert_sort(Z,m*n);
+		thin_cells++;
+		return;
+	}
+
+	int m2 = m >> 1;
+	int n2 = n >> 1;
+
+	int diff_horz = (POINT_SUM(X,Y,m2-1,n-1)) - (POINT_SUM(X,Y,m2,0));
+	int diff_vert = (POINT_SUM(X,Y,m-1,n2-1)) - (POINT_SUM(X,Y,0,n2));
+	// printf("h: %d, v: %d\t hp1: %d, hp2: %d\t vp1: %d, vp2: %d\n", 
+	// 	diff_horz, diff_vert, 
+	// 	POINT_SUM(X,Y,m2-1,n-1), POINT_SUM(X,Y,m2,0),
+	// 	POINT_SUM(X,Y,m-1,n2-1), POINT_SUM(X,Y,0,n2));
+	int l1,l2;
+
+	if (diff_horz < diff_vert) {
+		hh_sort(X, Y, Z, m2, n);
+		l1 = m2*n;
+		hh_sort(X+m2, Y, Z+l1, m - m2,n);
+		l2 = (m-m2)*n;
+		if (diff_horz > 0) {
+			merge(Z, Z+l1, l1, l2);
+			//printf("horz: ");
+		}
+		// } else {
+		// 	branches++;
+		// 	good_branches++;
+		// }
+		branches++;
+	}
+	else {
+		hh_sort(X, Y, Z, m, n2);
+		l1 = m * n2;
+		hh_sort(X, Y+n2, Z+l1, m,n-n2);
+		l2 = (n-n2)*m;
+
+		if (diff_vert > 0) {
+			merge(Z, Z+l1, l1, l2);
+			//printf("vert: ");
+		}// else {
+		// 	branches++;
+		// 	good_branches++;
+		// }
+		branches++;
+		vert_branches++;
+	}
+	// print_array(Z,l1);
+	// print_array(Z+l1,l2);
+	//print_array(Z,l1+l2);
+}
+
+
 
 void brute_force(int * const X, int * const Y, int * const Z, const int m, const int n){
 	merge_sort(Z, m *n);
@@ -184,7 +215,7 @@ int compare(int * const Z, int * const Zbf, const int n){
 
 int main(int argc, char *argv[]) {
 	srand(time(NULL)); // SEED RANDOM
-	int n = 0;     // Set problem size
+	int n = 500;     // Set problem size
 	int i, j; // indices for iteration
 	
 	unsigned int MAX_INT = (1<< 15);          // Set range of values in X, Y
@@ -193,8 +224,9 @@ int main(int argc, char *argv[]) {
 	puts("Testing Sum XY Range Sort for X + Y");
 	puts("==========================================");
 	
-	for(j= 0; j <10; j++) {
-		n = n + 1000;
+	for(j= 0; j < 5; j++) {
+		n = n*2;
+		k = sqrt(n);//log2(n);
 
 		printf("N = %d\t MAX_INT = %d\t", n, MAX_INT);
 		int * X = (int *)malloc(n*sizeof(int));
@@ -204,17 +236,17 @@ int main(int argc, char *argv[]) {
 		
 		// POPULATE X, Y
 
-	for( i = 0; i < n; i++) {
-		*(X+i) = rand() % MAX_INT;
-		*(Y+i) = rand() % MAX_INT;
-	}
+		for( i = 0; i < n; i++) {
+			*(X+i) = rand() % MAX_INT;
+			*(Y+i) = rand() % MAX_INT;
+		}
 	
 		// SORT X, Y
 		 merge_sort(X, n);
-		 merge_sort(Y, n);
-		//cosnard(X,Y,n);
+		merge_sort(Y, n);
+		// cosnard(X,Y,n);
 		//ideal(Y,X,n);
-//		Print arrays
+		//Print arrays
 		// puts("n\tX\tY");
 		// for( i = 0; i < n; i++){
 		// 	printf("%d\t%d\t%d\n",i, X[i], Y[i]);
@@ -223,20 +255,21 @@ int main(int argc, char *argv[]) {
 		clock_t start1, end1, start2, end2;
 		double cpu_time_used1, cpu_time_used2;
 		start1 = clock();
-		hh_sort(X, X, Z, n, n);
+		hh_sort(X, Y, Z, n, n);
 		end1 = clock();
 		cpu_time_used1 = ((double) (end1 - start1)) / CLOCKS_PER_SEC;
 	printf("Half n Half: %0.3f\t ", cpu_time_used1);
 		
-		gen_z(X, X, Zbf, n, n);
+		gen_z(X, Y, Zbf, n, n);
 		start2 = clock();
 		bf_merge_calls=0;
-		brute_force(X, X, Zbf, n, n);
+		brute_force(X, Y, Zbf, n, n);
 		end2 = clock();
 		cpu_time_used2 = ((double) (end2 - start2)) / CLOCKS_PER_SEC;
 		printf("Brute Force: %0.3f bf_branch: %d\t",cpu_time_used2, bf_merge_calls);
 
-		printf("Branch factor: %0.2f\t branches: %d/%d/%d\n",(good_branches*100.0)/branches, vert_branches, good_branches, branches);
+		//printf("Branch factor: %0.2f\t branches: %d/%d/%d\n",(good_branches*100.0)/branches, vert_branches, good_branches, branches);
+		printf("thin_cells: %d (avg: %0.1f)\n",thin_cells,(n*n)/(double)thin_cells);
 
 		compare(Z, Zbf, n*n);
 		// print_array(Z,n*n);
@@ -248,6 +281,7 @@ int main(int argc, char *argv[]) {
 		branches= 0;
 		good_branches = 0;
 		vert_branches = 0;
+		thin_cells=0;
 	}
 	
 	return 0;
