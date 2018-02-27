@@ -112,6 +112,18 @@ void merge_sort(int * const X, const int n){
 	merge_sort(X+m, n-m);
 	merge(X, X+m, m, n-m);
 }
+void k_merge_sort(int * const X, const int n){
+	if( n < k) {// Base Case{
+		insert_sort(X,n);
+		return;
+	}
+	
+	const int m = n/2; // Find Mid Point
+
+	k_merge_sort(X, m);
+	k_merge_sort(X+m, n-m);
+	merge(X, X+m, m, n-m);
+}
 
 void  thin_sort(int X, int * const Y, int * const Z, int n){
 	int * t = Z;
@@ -202,7 +214,7 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 
 
 void brute_force(int * const X, int * const Y, int * const Z, const int m, const int n){
-	merge_sort(Z, m *n);
+	k_merge_sort(Z, m *n);
 }
 int compare(int * const Z, int * const Zbf, const int n){
 	int i;
@@ -226,7 +238,7 @@ int main(int argc, char *argv[]) {
 	
 	for(j= 0; j < 5; j++) {
 		n = n*2;
-		k = sqrt(n);//log2(n);
+		k = 2;//log2(n)*log2(n);
 
 		printf("N = %d\t MAX_INT = %d\t", n, MAX_INT);
 		int * X = (int *)malloc(n*sizeof(int));
@@ -237,8 +249,8 @@ int main(int argc, char *argv[]) {
 		// POPULATE X, Y
 
 		for( i = 0; i < n; i++) {
-			*(X+i) = rand() % MAX_INT;
-			*(Y+i) = rand() % MAX_INT;
+			*(X+i) = rand() % MAX_INT + rand()% MAX_INT;
+			*(Y+i) = rand() % MAX_INT + rand()% MAX_INT;
 		}
 	
 		// SORT X, Y
