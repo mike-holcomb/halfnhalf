@@ -73,7 +73,7 @@ void ideal(int *X, int *Y, const int n) {
 }
 
 void merge(int * const X, int * const Y, const int m,  const int n){
-	if(*Y < *(X+m-1)){
+	// if(*Y < *(X+m-1)){
 		int num = m + n; // Number of elements overall
 		int *tmp = (int *)malloc(m * sizeof(int)); // Temp array
 		memcpy(tmp, X, m *sizeof(int));
@@ -95,9 +95,9 @@ void merge(int * const X, int * const Y, const int m,  const int n){
 			xp++;
 		}
 		free(tmp);
-	} else {
-		memcpy(X+m,Y,n);
-	}
+	// } else {
+	// 	memcpy(X+m,Y,n);
+	// }
 	// print_array(X, m);
 	// print_array(Y, n);
 	bf_merge_calls++;
@@ -247,13 +247,15 @@ void bass_ackwards(int * const X, int * const Y, const int m, const int n ){
 
 void hh_sort2(int * const X, int * const Y, int * const Z, const int m, const int n) {
 	if(m == 1) {
-		thin_sort(*X, Y, Z, n);
+		gen_z(X, Y, Z, 1,n);
+		//thin_sort(*X, Y, Z, n);
 		thin_cells++;
 		return;
 	} 
 
 	if(n == 1) {
-		thin_sort(*Y, X, Z, m);
+		gen_z(Y,X,Z,1,m);
+		//thin_sort(*Y, X, Z, m);
 		thin_cells++;
 		return;
 	}
@@ -270,12 +272,12 @@ void hh_sort2(int * const X, int * const Y, int * const Z, const int m, const in
 	// 	thin_cells++;
 	// 	return;
 	// }
-	if( m * n < k){
-		gen_z(Y,X,Z,n,m);
-		insert_sort(Z,n*m);
-		thin_cells++;
-		return;
-	}
+	// if( m * n < k){
+	// 	gen_z(Y,X,Z,n,m);
+	// 	insert_sort(Z,n*m);
+	// 	thin_cells++;
+	// 	return;
+	// }
 
 	int i;
 	int diff;
@@ -373,9 +375,9 @@ int main(int argc, char *argv[]) {
 	puts("Testing Sum XY Range Sort for X + Y");
 	puts("==========================================");
 	
-	for(j= 0; j < 10; j++) {
+	for(j= 0; j < 7; j++) {
 		n = n*2;
-		k = 2;//log2(n);
+		k = log2(n);
 
 		printf("N = %d\t MAX_INT = %d\t", n, MAX_INT);
 		int * X = (int *)malloc(n*sizeof(int));
@@ -388,9 +390,9 @@ int main(int argc, char *argv[]) {
 		// SORT X, Y
 
 		// cosnard(X,Y,n);
-		ideal(X,Y,n);
-		// normal(X,Y,n);
-		//double_normal(X,Y,n);
+		//ideal(X,Y,n);
+		 normal(X,Y,n);
+		// double_normal(X,Y,n);
 		//Print arrays
 		// puts("n\tX\tY");
 		// for( i = 0; i < n; i++){
@@ -400,7 +402,7 @@ int main(int argc, char *argv[]) {
 		clock_t start1, end1, start2, end2;
 		double cpu_time_used1, cpu_time_used2;
 		start1 = clock();
-		hh_sort(X, Y, Z, n, n);
+		hh_sort2(X, Y, Z, n, n);
 		end1 = clock();
 		cpu_time_used1 = ((double) (end1 - start1)) / CLOCKS_PER_SEC;
 	printf("Half n Half: %0.3f\t ", cpu_time_used1);
@@ -411,10 +413,10 @@ int main(int argc, char *argv[]) {
 		brute_force(X, Y, Zbf, n, n);
 		end2 = clock();
 		cpu_time_used2 = ((double) (end2 - start2)) / CLOCKS_PER_SEC;
-		printf("Brute Force: %0.3f bf_branch: %d\t",cpu_time_used2, bf_merge_calls);
+		printf("Brute Force: %0.3f bf_branch: %ld\t",cpu_time_used2, bf_merge_calls);
 
 		//printf("Branch factor: %0.2f\t branches: %d/%d/%d\n",(good_branches*100.0)/branches, vert_branches, good_branches, branches);
-		printf("thin_cells: %d (avg: %0.1f)\n",thin_cells,(n*n)/(double)thin_cells);
+		printf("thin_cells: %ld (avg: %0.1f)\n",thin_cells,(n*n)/(double)thin_cells);
 
         compare(Z, Zbf, n*n);
 		// print_array(Z,n*n);
