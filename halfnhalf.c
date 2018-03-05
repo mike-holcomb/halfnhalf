@@ -14,10 +14,17 @@
 #include "math.h"
 
 #define POINT_SUM(X, Y, i, j)  *(X+i) + *(Y+j)
-//#include "halfnhalf.h"
+
+long branches = 0;
+long good_branches = 0;
+long vert_branches = 0;
+long merge_count = 0;
+double avg_merge_size = 0.0;
+long thin_cells = 0;
+int k = 0;
+unsigned int MAX_INT = (1<< 15); 
 
 void insert_sort(int * const x, long n){
-	// INSERTION SORT BC EASY TO CODE - PRETEND ITS A O(N LOG N) SORT
 	int t;
 	int *xi, *xj;
 	for(xi = x+1; xi < (x + n); xi++){
@@ -38,13 +45,15 @@ void print_array(int * const arr, const int n){
 	puts("");
 }
 
-long branches = 0;
-long good_branches = 0;
-long vert_branches = 0;
-long bf_merge_calls = 0;
-long thin_cells = 0;
-int k = 0;
-unsigned int MAX_INT = (1<< 15); 
+void print_arrays(int * const arr, int * const arr2, const int m, const int n){
+	int * arrp;
+	for(arrp = arr; arrp < arr+m; arrp++)
+		printf("%d ", *arrp);
+	printf(" || ");
+	for(arrp = arr2; arrp < arr2+n; arrp++)
+		printf("%d ", *arrp);
+	puts("");
+}
 
 void cosnard(int *X, int *Y, const int n) {
 	int *yp = Y;
@@ -74,6 +83,8 @@ void ideal(int *X, int *Y, const int n) {
 
 void merge(int * const X, int * const Y, const int m,  const int n){
 	// if(*Y < *(X+m-1)){
+	// printf("%d, %d , %x, %x    ",m,n, X, Y);
+	// print_arrays(X,Y,m,n);
 		int num = m + n; // Number of elements overall
 		int *tmp = (int *)malloc(m * sizeof(int)); // Temp array
 		memcpy(tmp, X, m *sizeof(int));
@@ -98,16 +109,17 @@ void merge(int * const X, int * const Y, const int m,  const int n){
 	// } else {
 	// 	memcpy(X+m,Y,n);
 	// }
-	// print_array(X, m);
-	// print_array(Y, n);
-	bf_merge_calls++;
+
+	merge_count++;
+	avg_merge_size += (m+n-avg_merge_size)/(merge_count);
 }
 
 void merge_sort(int * const X, const long n){
 	if( n < 2) // Base Case
 		return;
 	
-	const int m = n/2; // Find Mid Point
+	const long m = n/2; // Find Mid Point
+	// printf("%ld %ld  %x    %x\n",m,n-m, X, X+m);
 
 	merge_sort(X, m);
 	merge_sort(X+m, n-m);
@@ -174,13 +186,13 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 	// 	return;
 	// }
 
-	if(m*n < k) {
-		//printf("%d * %d = %d < %d\n",m,n,m*n,k);
-		gen_z(X,Y,Z,m,n);
-		insert_sort(Z,m*n);
-		thin_cells++;
-		return;
-	}
+	// if(m*n < k) {
+	// 	//printf("%d * %d = %d < %d\n",m,n,m*n,k);
+	// 	gen_z(X,Y,Z,m,n);
+	// 	insert_sort(Z,m*n);
+	// 	thin_cells++;
+	// 	return;
+	// }
 
 	int m2 = m >> 1;
 	int n2 = n >> 1;
@@ -321,19 +333,17 @@ void hh_sort2(int * const X, int * const Y, int * const Z, const int m, const in
 		//printf("Sub Horz  Split %d %d\n",min_posx,n );
 		hh_sort2(X, Y, Z, min_posx, n);
 		hh_sort2(X+min_posx, Y, Z+min_posx*n, m-min_posx,n);
-		//merge(Z, Z+(min_posx)*n, (min_posx)*n, (m-min_posx)*n);
 		merge(Z, Z+(min_posx)*n, (min_posx)*n, (m-min_posx)*n);
 	} else {
 		//printf("Sub Vert  Split %d %d\n",m,min_posy );
 		hh_sort2(X, Y, Z, m, min_posy);
 		hh_sort2(X, Y+min_posy, Z+m*min_posy, m, n-min_posy);
-		//merge(Z, Z+(min_posy)*m, (min_posy)*m, (n-min_posy)*m);
 		merge(Z, Z+(min_posy)*m, (min_posy)*m, (n-min_posy)*m);
 	}
 }
 
 void brute_force(int * const X, int * const Y, int * const Z, const int m, const int n){
-	k_merge_sort(Z, m *n);
+	merge_sort(Z, m*n);
 }
 
 int compare(int * const Z, int * const Zbf, const int n){
@@ -355,6 +365,16 @@ void normal(int * const X,int * const  Y, const int n) {
 		merge_sort(Y, n);
 }
 
+void constant_alphabeta(int * const X, int * const Y, const int n, int alpha, int beta) {
+	int i;
+	*X = alpha;
+	*Y = beta;
+	for( i = 1; i < n; i++) {
+		*(X+i) = (rand() % (2*alpha)) + *(X+i-1);
+		*(Y+i) = (rand() % (2*beta)) + *(Y+i-1);
+	}
+}
+
 void double_normal(int * const X,int * const  Y, const int n){
 	int i;
 	for( i = 0; i < n; i++) {
@@ -366,8 +386,9 @@ void double_normal(int * const X,int * const  Y, const int n){
 
 int main(int argc, char *argv[]) {
 	srand(time(NULL)); // SEED RANDOM
-	int n = 500;     // Set problem size
+	int n = 4000;     // Set problem size
 	int i, j; // indices for iteration
+	int a = 0;
 	
          // Set range of values in X, Y
 	
@@ -375,11 +396,12 @@ int main(int argc, char *argv[]) {
 	puts("Testing Sum XY Range Sort for X + Y");
 	puts("==========================================");
 	
-	for(j= 0; j < 7; j++) {
-		n = n*2;
-		k = log2(n);
+	for(j= 0; j < 20; j++) {
+		//n = n*2;
+		k = 2;
+		a+=200;
 
-		printf("N = %d\t MAX_INT = %d\t", n, MAX_INT);
+		printf("N = %d ", n);
 		int * X = (int *)malloc(n*sizeof(int));
 		int * Y = (int *)malloc(n*sizeof(int));
 		int * Z = (int *)malloc(n*n*sizeof(int));
@@ -390,9 +412,17 @@ int main(int argc, char *argv[]) {
 		// SORT X, Y
 
 		// cosnard(X,Y,n);
-		//ideal(X,Y,n);
-		 normal(X,Y,n);
+		// ideal(X,Y,n);
+		// normal(X,Y,n);
 		// double_normal(X,Y,n);
+		constant_alphabeta(X, Y, n, a, 20);
+
+		int alpha = *(X+n-1) - *X;
+		int beta  = *(Y+n-1) - *Y;
+		double avg_alpha = (double)alpha / (n-1);
+		double avg_beta  = (double)beta / (n-1);
+		double pigeonhole = avg_alpha * avg_beta;
+
 		//Print arrays
 		// puts("n\tX\tY");
 		// for( i = 0; i < n; i++){
@@ -401,26 +431,31 @@ int main(int argc, char *argv[]) {
 
 		clock_t start1, end1, start2, end2;
 		double cpu_time_used1, cpu_time_used2;
+		merge_count=0;
+		avg_merge_size=0;
 		start1 = clock();
-		hh_sort2(X, Y, Z, n, n);
+		hh_sort(X, Y, Z, n, n);
 		end1 = clock();
 		cpu_time_used1 = ((double) (end1 - start1)) / CLOCKS_PER_SEC;
-	printf("Half n Half: %0.3f\t ", cpu_time_used1);
+	printf("HH: %0.3f merge: %ld (%0.1f)\t", cpu_time_used1, merge_count, avg_merge_size);
 		
+		merge_count=0;
+		avg_merge_size=0;
 		start2 = clock();
-		bf_merge_calls=0;
 		gen_z(X, Y, Zbf, n, n);
+		// puts("");
+		// print_array(Zbf,n*n);
 		brute_force(X, Y, Zbf, n, n);
 		end2 = clock();
 		cpu_time_used2 = ((double) (end2 - start2)) / CLOCKS_PER_SEC;
-		printf("Brute Force: %0.3f bf_branch: %ld\t",cpu_time_used2, bf_merge_calls);
+		printf("Brute Force: %0.3f merge: %ld (%0.1f)\t",cpu_time_used2, merge_count, avg_merge_size);
 
 		//printf("Branch factor: %0.2f\t branches: %d/%d/%d\n",(good_branches*100.0)/branches, vert_branches, good_branches, branches);
-		printf("thin_cells: %ld (avg: %0.1f)\n",thin_cells,(n*n)/(double)thin_cells);
+		printf("thin_cells: %ld (avg: %0.1f), avg alpha %0.1f, beta %0.1f, pigeonhole: %0.1f\n",thin_cells,(n*n)/(double)thin_cells, avg_alpha, avg_beta, pigeonhole);
 
         compare(Z, Zbf, n*n);
 		// print_array(Z,n*n);
-		// print_array(Zbf,n*n);
+		//print_array(Zbf,n*n);
 		free(X);
 		free(Y);
 		free(Z);
