@@ -200,7 +200,6 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 		branches++;
 		vert_branches++;
 	}
-}
 
 	int m2 = m >> 1;
 	int n2 = n >> 1;
