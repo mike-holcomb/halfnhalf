@@ -161,48 +161,21 @@ void gen_z(int * const X, int * const Y, int * const Z, const int m, const int n
 void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int n) {
 	if(m == 1) {
 		gen_z(X, Y, Z, 1,n);
-		//thin_sort(*X, Y, Z, n);
 		thin_cells++;
 		return;
 	} 
 
 	if(n == 1) {
 		gen_z(Y,X,Z,1,m);
-		//thin_sort(*Y, X, Z, m);
 		thin_cells++;
 		return;
 	}
-
-	// if(m ==2){
-	// 	gen_z(X,Y,Z,m,n);
-	// 	merge(Z,Z+n,n,n);
-	// 	thin_cells++;
-	// 	return;
-	// }
-	// if( n == 2){
-	// 	gen_z(Y,X,Z,n,m);
-	// 	merge(Z,Z+m,m,m);
-	// 	thin_cells++;
-	// 	return;
-	// }
-
-	// if(m*n < k) {
-	// 	//printf("%d * %d = %d < %d\n",m,n,m*n,k);
-	// 	gen_z(X,Y,Z,m,n);
-	// 	insert_sort(Z,m*n);
-	// 	thin_cells++;
-	// 	return;
-	// }
 
 	int m2 = m >> 1;
 	int n2 = n >> 1;
 
 	int diff_horz = (POINT_SUM(X,Y,m2-1,n-1)) - (POINT_SUM(X,Y,m2,0));
 	int diff_vert = (POINT_SUM(X,Y,m-1,n2-1)) - (POINT_SUM(X,Y,0,n2));
-	// printf("h: %d, v: %d\t hp1: %d, hp2: %d\t vp1: %d, vp2: %d\n", 
-	// 	diff_horz, diff_vert, 
-	// 	POINT_SUM(X,Y,m2-1,n-1), POINT_SUM(X,Y,m2,0),
-	// 	POINT_SUM(X,Y,m-1,n2-1), POINT_SUM(X,Y,0,n2));
 	int l1,l2;
 
 	if (diff_horz < diff_vert) {
@@ -212,12 +185,7 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 		l2 = (m-m2)*n;
 		if (diff_horz > 0) {
 			merge(Z, Z+l1, l1, l2);
-			//printf("horz: ");
 		}
-		// } else {
-		// 	branches++;
-		// 	good_branches++;
-		// }
 		branches++;
 	}
 	else {
@@ -228,17 +196,41 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 
 		if (diff_vert > 0) {
 			merge(Z, Z+l1, l1, l2);
-			//printf("vert: ");
-		}// else {
-		// 	branches++;
-		// 	good_branches++;
-		// }
+		}
 		branches++;
 		vert_branches++;
 	}
-	// print_array(Z,l1);
-	// print_array(Z+l1,l2);
-	//print_array(Z,l1+l2);
+}
+
+	int m2 = m >> 1;
+	int n2 = n >> 1;
+
+	int diff_horz = (POINT_SUM(X,Y,m2-1,n-1)) - (POINT_SUM(X,Y,m2,0));
+	int diff_vert = (POINT_SUM(X,Y,m-1,n2-1)) - (POINT_SUM(X,Y,0,n2));
+	int l1,l2;
+
+	if (diff_horz < diff_vert) {
+		hh_sort(X, Y, Z, m2, n);
+		l1 = m2*n;
+		hh_sort(X+m2, Y, Z+l1, m - m2,n);
+		l2 = (m-m2)*n;
+		if (diff_horz > 0) {
+			merge(Z, Z+l1, l1, l2);
+		}
+		branches++;
+	}
+	else {
+		hh_sort(X, Y, Z, m, n2);
+		l1 = m * n2;
+		hh_sort(X, Y+n2, Z+l1, m,n-n2);
+		l2 = (n-n2)*m;
+
+		if (diff_vert > 0) {
+			merge(Z, Z+l1, l1, l2);
+		}
+		branches++;
+		vert_branches++;
+	}
 }
 
 void bass_ackwards(int * const X, int * const Y, const int m, const int n ){
