@@ -200,36 +200,6 @@ void hh_sort(int * const X, int * const Y, int * const Z, const int m, const int
 		branches++;
 		vert_branches++;
 	}
-
-	int m2 = m >> 1;
-	int n2 = n >> 1;
-
-	int diff_horz = (POINT_SUM(X,Y,m2-1,n-1)) - (POINT_SUM(X,Y,m2,0));
-	int diff_vert = (POINT_SUM(X,Y,m-1,n2-1)) - (POINT_SUM(X,Y,0,n2));
-	int l1,l2;
-
-	if (diff_horz < diff_vert) {
-		hh_sort(X, Y, Z, m2, n);
-		l1 = m2*n;
-		hh_sort(X+m2, Y, Z+l1, m - m2,n);
-		l2 = (m-m2)*n;
-		if (diff_horz > 0) {
-			merge(Z, Z+l1, l1, l2);
-		}
-		branches++;
-	}
-	else {
-		hh_sort(X, Y, Z, m, n2);
-		l1 = m * n2;
-		hh_sort(X, Y+n2, Z+l1, m,n-n2);
-		l2 = (n-n2)*m;
-
-		if (diff_vert > 0) {
-			merge(Z, Z+l1, l1, l2);
-		}
-		branches++;
-		vert_branches++;
-	}
 }
 
 void bass_ackwards(int * const X, int * const Y, const int m, const int n ){
