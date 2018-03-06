@@ -396,7 +396,7 @@ int main(int argc, char *argv[]) {
 	puts("Testing Sum XY Range Sort for X + Y");
 	puts("==========================================");
 	
-	for(j= 0; j < 20; j++) {
+	for(j= 0; j < 19; j++) {
 		//n = n*2;
 		k = 2;
 		a+=200;
@@ -415,7 +415,7 @@ int main(int argc, char *argv[]) {
 		// ideal(X,Y,n);
 		// normal(X,Y,n);
 		// double_normal(X,Y,n);
-		constant_alphabeta(X, Y, n, a, 20);
+		constant_alphabeta(X, Y, n, a, n-a);
 
 		int alpha = *(X+n-1) - *X;
 		int beta  = *(Y+n-1) - *Y;
