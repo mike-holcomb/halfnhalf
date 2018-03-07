@@ -49,7 +49,8 @@ void splaynode_print(splaynode_t *n, int level ) {
 	for(;i<level;i++){
 		printf("-");
 	}
-	printf(" %ld\n", n->value);
+	char m = (n->count > 1) ? '*' : ' ';
+	printf(" %ld %c\n", n->value, m);
 	if(n->left != 0) {
 		splaynode_print(n->left, level+1);
 	}
@@ -57,6 +58,12 @@ void splaynode_print(splaynode_t *n, int level ) {
 	if(n->right != 0) {
 		splaynode_print(n->right, level+1);
 	}
+}
+
+void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
+	if(node == root)
+		return;
+	if(node->parent)
 }
 
 //// PUBLIC IN API
@@ -93,12 +100,13 @@ void splaytree_insert(splaytree_t * t, long val){
 	} else {
 		t->count++;
 	}
-	//  splaytree_splay(t, ret);
+	//  splaynode_splay(ret, t->root);
 }
+
+void splaytree_splay()
 
 void splaytree_print(splaytree_t * t) {
 	puts("Printing tree");
 	splaynode_print(t->root, 0);
 	puts("");
 }
-

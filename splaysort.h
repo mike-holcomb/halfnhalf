@@ -18,12 +18,12 @@ typedef struct splaytree_t {
 	long          capacity; // Maximum number of nodes
 } splaytree_t;
 
-splaytree_t * splaytree_init(long capacity);
+splaytree_t * splaytree_init( long capacity );
 
-void splaytree_destroy(splaytree_t * t);
+void splaytree_destroy( splaytree_t * t );
 
-void splaytree_insert(splaytree_t * t, long val);
+void splaytree_insert( splaytree_t * t, long val );
 
-void splaytree_print(splaytree_t * t);
+void splaytree_print( splaytree_t * t );
 
 #endif /* _SPLAYSORT_H_ */
