@@ -63,7 +63,91 @@ void splaynode_print(splaynode_t *n, int level ) {
 void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 	if(node == root)
 		return;
-	if(node->parent)
+	// ZIG
+	if(node->parent == root) {
+		if(root->left == node) {
+			puts("Zig Left");
+			root->left = node->right;
+			if(root->left != 0) root->left->parent = root;
+			root->parent = node;
+			node->right = root;
+			node->parent = 0;
+			return;
+		} else {
+			puts("Zig Right");
+			root->right = node->left;
+			if(root->right != 0) root->right->parent = root;
+			root->parent = node;
+			node->left = root;
+			node->parent = 0;
+			return;
+		}
+	} else {
+		splaynode_t *y = node->parent;
+		splaynode_t *x = y->parent;
+		splaynode_t *g = x->parent;
+		int isRoot = (x == root) ? 1 : 0;
+		if(!isRoot) {
+			node->parent = g;
+			if(g->left == x) {
+				g->left = node;
+			} else{
+				g->right = node;
+			}
+		}
+		if(x->left == y) {
+			if(y->left == node) { // ZIG-ZIG
+				puts("Zig Zig Left");
+				x->left = y->right;
+				if(x->left != 0) x->left->parent = x;
+				y->right = x;
+				x->parent = y;
+
+				y->left = node->right;
+				if(y->left != 0) y->left->parent = y;
+				node->right = y;
+				y->parent = node;
+			} else {              // ZIG-ZAG
+				puts("Zig Zag Left");
+				x->left = node->right;
+				if(x->left != 0) x->left->parent = x;
+				node->right = x;
+				x->parent = node;
+
+				y->right = node->left;
+				if(y->right != 0) y->right->parent = x;
+				y->parent = node;
+				node->left = y;
+			}
+		} else {      
+			if(y->left == node) { // ZIG-ZAG
+				puts("Zig Zag Right");
+				x->right = node->left;
+				if(x->right != 0) x->right->parent = x;
+				node->left = x;
+				x->parent = node;
+
+				y->left = node->right;
+				if(y->left != 0) y->left->parent = y;
+				node->right = y;
+				y->parent = node;
+			} else {              // ZIG-ZIG
+				puts("Zig Zig Right");
+				x->right = y->left;
+				if(x->right != 0) x->right->parent = x;
+				y->left = x;
+				x->parent = y;
+
+				y->right = node->left;
+				if(y->right != 0) y->right->parent = x;
+				node->left = y;
+				y->parent = node;
+			}
+		}
+		if(isRoot)
+			return;
+		splaynode_splay(node, root);
+	}
 }
 
 //// PUBLIC IN API
@@ -97,13 +181,13 @@ void splaytree_insert(splaytree_t * t, long val){
 	if(ret == next){
 		t->size++;
 		t->count++;
+		splaynode_splay(ret, t->root);
+		t->root = ret;
 	} else {
 		t->count++;
 	}
-	//  splaynode_splay(ret, t->root);
-}
 
-void splaytree_splay()
+}
 
 void splaytree_print(splaytree_t * t) {
 	puts("Printing tree");

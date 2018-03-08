@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
 	splaytree_t * t = splaytree_init(n+2);
 	for(i =0; i<n; i++){
 			splaytree_insert(t, vals[i]);
+			splaytree_print(t);
 	}
 	printf("Size: %ld Count: %ld Capacity: %ld\n", t->size, t->count, t->capacity);
 	splaytree_print(t);
