@@ -26,4 +26,6 @@ void splaytree_insert( splaytree_t * t, long val );
 
 void splaytree_print( splaytree_t * t );
 
+long * splaytree_fill_array( splaytree_t * t );
+
 #endif /* _SPLAYSORT_H_ */

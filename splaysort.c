@@ -66,7 +66,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 	// ZIG
 	if(node->parent == root) {
 		if(root->left == node) {
-			puts("Zig Left");
+			//puts("Zig Left");
 			root->left = node->right;
 			if(root->left != 0) root->left->parent = root;
 			root->parent = node;
@@ -74,7 +74,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 			node->parent = 0;
 			return;
 		} else {
-			puts("Zig Right");
+			//puts("Zig Right");
 			root->right = node->left;
 			if(root->right != 0) root->right->parent = root;
 			root->parent = node;
@@ -97,7 +97,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 		}
 		if(x->left == y) {
 			if(y->left == node) { // ZIG-ZIG
-				puts("Zig Zig Left");
+				//puts("Zig Zig Left");
 				x->left = y->right;
 				if(x->left != 0) x->left->parent = x;
 				y->right = x;
@@ -108,7 +108,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 				node->right = y;
 				y->parent = node;
 			} else {              // ZIG-ZAG
-				puts("Zig Zag Left");
+				//puts("Zig Zag Left");
 				x->left = node->right;
 				if(x->left != 0) x->left->parent = x;
 				node->right = x;
@@ -121,7 +121,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 			}
 		} else {      
 			if(y->left == node) { // ZIG-ZAG
-				puts("Zig Zag Right");
+				//puts("Zig Zag Right");
 				x->right = node->left;
 				if(x->right != 0) x->right->parent = x;
 				node->left = x;
@@ -132,7 +132,7 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 				node->right = y;
 				y->parent = node;
 			} else {              // ZIG-ZIG
-				puts("Zig Zig Right");
+				//puts("Zig Zig Right");
 				x->right = y->left;
 				if(x->right != 0) x->right->parent = x;
 				y->left = x;
@@ -148,6 +148,22 @@ void splaynode_splay(splaynode_t * const node, splaynode_t * const root) {
 			return;
 		splaynode_splay(node, root);
 	}
+}
+
+long splaynode_fill_array( splaynode_t * node, long * arr, long i) {
+	long left = 0;
+	long right = 0;
+	int j;
+	if(node->left != 0)
+		left = splaynode_fill_array( node->left, arr, i );
+
+	for(j=0; j < node->count; j++)
+		*(arr+left+i+j) = node->value;
+
+	if(node->right != 0)
+		right = splaynode_fill_array( node->right, arr, i + left + node->count);
+
+	return left + node->count + right;
 }
 
 //// PUBLIC IN API
@@ -193,4 +209,10 @@ void splaytree_print(splaytree_t * t) {
 	puts("Printing tree");
 	splaynode_print(t->root, 0);
 	puts("");
+}
+
+long * splaytree_fill_array( splaytree_t * t ) {
+	long * ret = malloc(t->count * sizeof(long));
+	splaynode_fill_array( t->root, ret, 0);
+	return ret;
 }
